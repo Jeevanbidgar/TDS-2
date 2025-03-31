@@ -117,7 +117,7 @@ def Solve_Unknown_Task(question):
     BASE_URL = "https://aiproxy.sanand.workers.dev/openai/v1"
     data = {
         "model": "gpt-4o-mini",
-        "messages": [{"role": "user", "content": question+" return only the answer"}]
+        "messages": [{"role": "user", "content": question + " return only the answer"}]
     }
     API_KEY = os.getenv("AIPROXY_TOKEN")
     headers = {
@@ -127,7 +127,14 @@ def Solve_Unknown_Task(question):
     response = httpx.post(BASE_URL + "/chat/completions",
                           json=data, headers=headers, timeout=60)
 
-    return response.json().get("choices", [])[0].get("message", {}).get("content")
+    # Add error handling for empty or unexpected responses
+    try:
+        choices = response.json().get("choices", [])
+        if not choices:
+            return "Error: No response choices available."
+        return choices[0].get("message", {}).get("content", "Error: No content in response.")
+    except Exception as e:
+        return f"Error processing response: {str(e)}"
 
 
 @app.post("/api/")
